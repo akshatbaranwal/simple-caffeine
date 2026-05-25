@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Build release artifact
+        id: build
+        run: |
+          ./Scripts/build-release.sh
+          VERSION="${GITHUB_REF_NAME#v}"
+          ZIP="release/SimpleCaffeine-${VERSION}.zip"
+          SHA=$(shasum -a 256 "$ZIP" | awk '{print $1}')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.build.outputs.zip }}
+          body: |
+            ## SimpleCaffeine ${{ steps.build.outputs.version }}
+
+            **SHA256:** `${{ steps.build.outputs.sha256 }}`
+
+            Update the cask in [akshatbaranwal/homebrew-tap](https://github.com/akshatbaranwal/homebrew-tap) with this version and sha256.
+
+            Install via Homebrew:
+            ```
+            brew tap akshatbaranwal/tap
+            brew install --cask simple-caffeine
+            ```
