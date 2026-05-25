@@ -42,7 +42,7 @@ ZIP_PATH="release/SimpleCaffeine-${VERSION}.zip"
 rm -f "$ZIP_PATH"
 
 echo "==> Packaging $ZIP_PATH"
-ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
+ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
 
 SHA=$(shasum -a 256 "$ZIP_PATH" | awk '{print $1}')
 SIZE=$(du -h "$ZIP_PATH" | awk '{print $1}')
